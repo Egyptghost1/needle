@@ -1,5 +1,6 @@
 from __future__ import print_function
 import os
+import sys
 import json
 import time
 import textwrap
@@ -273,23 +274,36 @@ class FridaScript(FridaModule):
         import frida
         if self.device.is_usb():
             self.printer.debug("Connected over USB")
-            device = frida.get_usb_device()
+            self.frida_device = frida.get_usb_device()
         else:
             self.printer.debug("Connected over Wi-Fi")
-            device = frida.get_device_manager().enumerate_devices()[1]
+            self.frida_device = frida.get_device_manager().enumerate_devices()[1]
 
         # Launching the app
         self.printer.info("Launching the app...")
-        self.device.app.open(self.APP_METADATA['bundle_id'])
-        pid = int(self.device.app.search_pid(self.APP_METADATA['name']))
+        #self.device.app.open(self.APP_METADATA['bundle_id'])
+        #pid = int(self.device.app.search_pid(self.APP_METADATA['name']))
+        self.pid = self.frida_device.spawn([self.APP_METADATA['bundle_id']])
 
         # Attaching to the process
-        self.printer.info("Attaching to process: %s" % pid)
-        self.session = device.attach(pid)
+        self.printer.info("Attaching to process: %s" % self.pid)
+        self.session = self.frida_device.attach(self.pid)
 
         # Preparing results
         self.results = []
         return 1
+
+    def run_payload(self, hook):
+        try:
+            self.printer.info("Parsing payload")
+            script = self.session.create_script(hook)
+            script.on('message', self.on_message)
+            script.load()
+            self.frida_device.resume(self.pid)
+            sys.stdin.read()
+        except Exception as e:
+            self.printer.warning("Script terminated abruptly")
+            self.printer.warning(e)
 
     def on_message(self, message, data):
         try:

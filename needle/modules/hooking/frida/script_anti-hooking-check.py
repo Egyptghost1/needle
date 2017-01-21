@@ -40,15 +40,5 @@ if(ObjC.available) {
     # RUN
     # ==================================================================================================================
     def module_run(self):
-        # Run the payload
-        try:
-            self.printer.info("Parsing payload")
-            title = self.options['title']
-            content = self.options['content']
-            hook = self.JS % (title, content)
-            script = self.session.create_script(hook)
-            script.on('message', self.on_message)
-            script.load()
-        except Exception as e:
-            self.printer.warning("Script terminated abruptly")
-            self.printer.warning(e)
+        hook = self.JS
+        self.run_payload(hook)

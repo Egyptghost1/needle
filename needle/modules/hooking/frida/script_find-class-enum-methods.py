@@ -45,17 +45,9 @@ if(ObjC.available) {
     def module_run(self):
         # Build the payload string
         target_class = self.options['target_class']
-        payload = self.JS % (target_class, target_class)
-
-        # Run the payload
-        try:
-            self.printer.info("Parsing payload")
-            hook = payload
-            script = self.session.create_script(hook)
-            script.on('message', self.on_message)
-            script.load()
-        except Exception as e:
-            self.printer.warning("Script terminated abruptly")
+        hook = self.JS % (target_class, target_class)
+        # Run payload
+        self.run_payload(hook)
 
     def module_post(self):
         self.print_cmd_output()

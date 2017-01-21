@@ -87,16 +87,8 @@ if (ObjC.available) {
     # RUN
     # ==================================================================================================================
     def module_run(self):
-        # Run the payload
-        try:
-            self.printer.info("Parsing payload")
-            hook = self.JS
-            script = self.session.create_script(hook)
-            script.on('message', self.on_message)
-            script.load()
-        except Exception as e:
-            self.printer.warning("Script terminated abruptly")
-            self.printer.warning(e)
+        hook = self.JS
+        self.run_payload(hook)
 
     def module_post(self):
         self.printer.info("Keychain Items:")
